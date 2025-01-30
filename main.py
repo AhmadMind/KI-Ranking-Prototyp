@@ -1,220 +1,132 @@
-from questions import QUESTIONS
+import numpy as np
+from RisikoFragen import RISIKO_FRAGEN, RISIKO_GEWICHTUNG, SCHWELLENWERTE
+from KonformitätsFragen import KONFORMITAETS_FRAGEN, KONFORMITAETS_GEWICHTUNG
 
-class KIScoringSystem:
-    def __init__(self):
-        self.risk_criteria = {
-            "Anwendungsbereich": 0,
-            "Auswirkungen auf Menschen": 0,
-            "Fehlerfolgen": 0,
-            "Automatisierungsgrad": 0,
-            "Transparenzanforderungen": 0,
-            "Datennutzung": 0,
-        }
-        self.categories = {
-            "Transparenz": [],
-            "Sicherheit": [],
-            "Ethik": [],
-            "Dokumentation": []
-        }
-        self.weights = {
-            "Transparenz": 0.35,
-            "Sicherheit": 0.35,
-            "Ethik": 0.20,
-            "Dokumentation": 0.10
-        }
-        self.questions = QUESTIONS
+# ----- Antwortoptionen mit automatischer Punktevergabe -----
+RISIKO_ANTWORTEN = {
+    "Trifft nicht zu": 0,
+    "Trifft teilweise nicht zu": 1,
+    "Mittel": 2,
+    "Trifft teilweise zu": 3,
+    "Trifft zu": 4
+}
 
-    def classify_risk(self):
-        print("\nRisikoklassifizierung:")
+KONFORMITAETS_ANTWORTEN = {
+    "Nicht erfüllt": 0,
+    "Teilweise erfüllt": 1,
+    "Vollständig erfüllt": 2
+}
 
-        # Anwendungsbereich
-        print("Anwendungsbereich:")
-        print("1: Medizinischer Bereich")
-        print("2: Verkehr")
-        print("3: Justiz")
-        print("4: Bildung")
-        print("5: Verbraucherdienste")
-        print("6: Andere (weniger sensibel)")
-        while True:
-            try:
-                choice = int(input("Bitte wählen Sie einen Anwendungsbereich (1-6): "))
-                if choice in [1, 2, 3, 4, 5, 6]:
-                    break
-                else:
-                    print("Ungültige Eingabe. Bitte wählen Sie eine Zahl zwischen 1 und 6.")
-            except ValueError:
-                print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
 
-        if choice == 1:
-            self.risk_criteria["Anwendungsbereich"] = 5
-        elif choice == 2:
-            self.risk_criteria["Anwendungsbereich"] = 5
-        elif choice == 3:
-            self.risk_criteria["Anwendungsbereich"] = 5
-        elif choice == 4:
-            self.risk_criteria["Anwendungsbereich"] = 3
-        elif choice == 5:
-            self.risk_criteria["Anwendungsbereich"] = 2
-        else:
-            self.risk_criteria["Anwendungsbereich"] = 1
+def fragebogen_ausfuellen(fragen_dict, antwort_möglichkeiten):
+    """
+    Führt den Nutzer durch einen interaktiven Fragebogen.
+    Der Nutzer wählt eine Antwortoption, die in Punkte umgewandelt wird.
+    """
+    antworten = {}
+    print("\nBitte beantworten Sie die folgenden Fragen:")
 
-        # Auswirkungen auf Menschen
-        print("\nHat die KI potenziell Auswirkungen auf die Rechte und Freiheiten von Menschen?")
-        print("1: Keine Auswirkungen")
-        print("2: Geringe Auswirkungen")
-        print("3: Moderate Auswirkungen")
-        print("4: Hohe Auswirkungen")
-        print("5: Kritische Auswirkungen")
-        while True:
-            try:
-                impact = int(input("Wählen Sie eine Stufe (1-5): "))
-                if impact in [1, 2, 3, 4, 5]:
-                    self.risk_criteria["Auswirkungen auf Menschen"] = impact
-                    break
-                else:
-                    print("Ungültige Eingabe. Bitte wählen Sie eine Zahl zwischen 1 und 5.")
-            except ValueError:
-                print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
+    for kategorie, fragen in fragen_dict.items():
+        print(f"\n=== {kategorie.upper()} ===")
+        antworten[kategorie] = []
 
-        # Fehlerfolgen
-        print("\nWie schwerwiegend wären mögliche Fehlerfolgen?")
-        print("1: Keine schwerwiegenden Folgen")
-        print("2: Geringe Folgen")
-        print("3: Moderate Folgen")
-        print("4: Hohe Folgen")
-        print("5: Kritische Folgen")
-        while True:
-            try:
-                consequences = int(input("Wählen Sie eine Stufe (1-5): "))
-                if consequences in [1, 2, 3, 4, 5]:
-                    self.risk_criteria["Fehlerfolgen"] = consequences
-                    break
-                else:
-                    print("Ungültige Eingabe. Bitte wählen Sie eine Zahl zwischen 1 und 5.")
-            except ValueError:
-                print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
+        for frage in fragen:
+            print(f"\n{frage}")
+            for idx, option in enumerate(antwort_möglichkeiten.keys(), start=1):
+                print(f"{idx}. {option}")
 
-        # Automatisierungsgrad
-        print("\nWie hoch ist der Automatisierungsgrad der KI?")
-        print("1: Unterstützend (nur Empfehlungen)")
-        print("2: Teilweise automatisiert")
-        print("3: Überwiegend automatisiert")
-        print("4: Vollautomatisch mit menschlicher Überprüfung")
-        print("5: Vollautomatisch ohne menschliche Überprüfung")
-        while True:
-            try:
-                automation = int(input("Wählen Sie eine Stufe (1-5): "))
-                if automation in [1, 2, 3, 4, 5]:
-                    self.risk_criteria["Automatisierungsgrad"] = automation
-                    break
-                else:
-                    print("Ungültige Eingabe. Bitte wählen Sie eine Zahl zwischen 1 und 5.")
-            except ValueError:
-                print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
-
-        # Transparenzanforderungen
-        print("\nWie transparent ist die Entscheidungsfindung der KI?")
-        print("1: Vollständig transparent")
-        print("2: Weitgehend transparent")
-        print("3: Teilweise transparent")
-        print("4: Geringe Transparenz")
-        print("5: Keine Transparenz (Black-Box)")
-        while True:
-            try:
-                transparency = int(input("Wählen Sie eine Stufe (1-5): "))
-                if transparency in [1, 2, 3, 4, 5]:
-                    self.risk_criteria["Transparenzanforderungen"] = transparency
-                    break
-                else:
-                    print("Ungültige Eingabe. Bitte wählen Sie eine Zahl zwischen 1 und 5.")
-            except ValueError:
-                print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
-
-        # Datennutzung
-        print("\nVerarbeitet die KI sensible oder personenbezogene Daten?")
-        print("1: Keine Daten")
-        print("2: Wenig sensible Daten")
-        print("3: Moderate Menge sensibler Daten")
-        print("4: Viele sensible Daten")
-        print("5: Kritische personenbezogene Daten")
-        while True:
-            try:
-                data_usage = int(input("Wählen Sie eine Stufe (1-5): "))
-                if data_usage in [1, 2, 3, 4, 5]:
-                    self.risk_criteria["Datennutzung"] = data_usage
-                    break
-                else:
-                    print("Ungültige Eingabe. Bitte wählen Sie eine Zahl zwischen 1 und 5.")
-            except ValueError:
-                print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
-
-        total_risk_score = sum(self.risk_criteria.values())
-        if total_risk_score >= 21:
-            return "Hochrisiko"
-        elif total_risk_score >= 11:
-            return "Begrenztes Risiko"
-        else:
-            return "Minimal"
-
-    def evaluate_category(self, category):
-        print(f"\nFragenkatalog für {category}:")
-        scores = []
-        for i, question in enumerate(self.questions[category], 1):
             while True:
-                print(f"Frage {i}: {question}")
                 try:
-                    score = int(input("Punkte (0-2): "))
-                    if score not in [0, 1, 2]:
-                        print("Ungültige Eingabe. Bitte geben Sie 0, 1 oder 2 ein.")
-                    else:
-                        scores.append(score)
+                    auswahl = int(input("Wählen Sie eine Option (1-{}): ".format(len(antwort_möglichkeiten))))
+                    if 1 <= auswahl <= len(antwort_möglichkeiten):
+                        antworten[kategorie].append(list(antwort_möglichkeiten.values())[auswahl - 1])
                         break
+                    else:
+                        print("❌ Ungültige Eingabe. Bitte eine Zahl zwischen 1 und {} eingeben.".format(len(antwort_möglichkeiten)))
                 except ValueError:
-                    print("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.")
-        self.categories[category] = scores
+                    print("❌ Bitte eine gültige Zahl eingeben.")
 
-    def calculate_scores(self):
-        normalized_scores = {}
-        total_compliance_score = 0
+    return antworten
 
-        for category, scores in self.categories.items():
-            category_score = sum(scores) / (2 * len(scores))  # Maximal 20 Punkte pro Kategorie
-            normalized_scores[category] = category_score
-            total_compliance_score += category_score * self.weights[category]
 
-        return normalized_scores, total_compliance_score
+# ---- Risikoanalyse ----
+def berechne_risikowertung(antworten):
+    """
+    Berechnet die Risikowertung basierend auf den gegebenen Antworten (0-4 Skala).
+    """
+    gesamt_score = 0
+    max_möglicher_score = sum(RISIKO_GEWICHTUNG.values()) * 4  # Jede Frage hat max. 4 Punkte
 
-    def run(self):
-        print("Willkommen zum KI Scoring System!\n")
+    for kategorie, gewichtung in RISIKO_GEWICHTUNG.items():
+        if kategorie in antworten:
+            score = np.mean(antworten[kategorie]) * gewichtung  # Durchschnittswerte gewichten
+            gesamt_score += score
 
-        # Schritt 1: Risikoklassifizierung
-        risk_level = self.classify_risk()
-        print(f"\nRisikostufe: {risk_level}\n")
+    risiko_prozent = (gesamt_score / max_möglicher_score) * 100
+    return risiko_prozent
 
-        # Schritt 2: Fragenkatalog ausfüllen
-        for category in self.categories.keys():
-            self.evaluate_category(category)
 
-        # Schritt 3: Konformitätsbewertung
-        normalized_scores, total_compliance_score = self.calculate_scores()
+def bestimme_risikoklasse(score):
+    """
+    Bestimmt die Risikoklasse basierend auf dem errechneten Score.
+    """
+    for klasse, (min_wert, max_wert) in SCHWELLENWERTE.items():
+        if min_wert <= score <= max_wert:
+            return klasse
+    return "Unbekannt"
 
-        # Schritt 4: Ergebnisse anzeigen
-        print("\nDie Score:")
-        print(f"Risikostufe: {risk_level}")
-        for category, score in normalized_scores.items():
-            print(f"{category} Score: {score * 100:.0f}%")
-        print(f"Konformitätsbewertung: {total_compliance_score * 100:.0f}%")
 
-        if risk_level == "Hochrisiko" and total_compliance_score >= 0.95:
-            print("Status: Konform")
-        elif risk_level == "Begrenztes Risiko" and total_compliance_score >= 0.75:
-            print("Status: Konform")
-        elif risk_level == "Minimal" and total_compliance_score >= 0.60:
-            print("Status: Konform")
-        else:
-            print("Status: Nicht konform")
+# ---- Konformitätsbewertung ----
+def berechne_konformitätsbewertung(antworten):
+    """
+    Berechnet die Konformitätsbewertung basierend auf den gegebenen Antworten (0-2 Skala).
+    """
+    gesamt_score = 0
+    max_mögliche_punkte = sum(KONFORMITAETS_GEWICHTUNG.values()) * 20  # Jede Kategorie hat max. 20 Punkte
 
-# Anwendung ausführen
+    for kategorie, gewichtung in KONFORMITAETS_GEWICHTUNG.items():
+        if kategorie in antworten:
+            score = np.sum(antworten[kategorie]) * gewichtung  # Punkte gewichtet summieren
+            gesamt_score += score
+
+    return gesamt_score / max_mögliche_punkte * 100  # Umrechnung in Prozent
+
+
+def berechne_konformitätsbewertung_in_prozent(konformität_score, risikoklasse):
+    """
+    Berechnet die endgültige Konformitätsbewertung in % basierend auf der Risikoklasse.
+    """
+    if risikoklasse == "kein":
+        return min(100, konformität_score)  # Lineare Funktion
+    elif risikoklasse == "gering":
+        return min(100, 0.01 * (konformität_score ** 2))  # Quadratische Funktion
+    elif risikoklasse == "mittel":
+        return min(100, 0.0001 * (konformität_score ** 3))  # Kubische Funktion
+    elif risikoklasse == "hoch":
+        return min(100, 100 * (konformität_score / 100) ** 4)  # Exponentielle Funktion
+    return 0
+
+
 if __name__ == "__main__":
-    system = KIScoringSystem()
-    system.run()
+    print("\n===== RISIKOKLASSIFIZIERUNG =====")
+    antworten_risiko = fragebogen_ausfuellen(RISIKO_FRAGEN, RISIKO_ANTWORTEN)
+
+    # 1. Berechnung der Risikoklasse
+    risiko_score = berechne_risikowertung(antworten_risiko)
+    risikoklasse = bestimme_risikoklasse(risiko_score)
+
+    print("\n===== KONFORMITÄTSBEWERTUNG =====")
+    antworten_konformität = fragebogen_ausfuellen(KONFORMITAETS_FRAGEN, KONFORMITAETS_ANTWORTEN)
+
+    # 2. Berechnung der Konformitätsbewertung
+    konformitäts_score = berechne_konformitätsbewertung(antworten_konformität)
+
+    # 3. Berechnung der finalen Konformitätsbewertung in %
+    konformitätsbewertung_prozent = berechne_konformitätsbewertung_in_prozent(konformitäts_score, risikoklasse)
+
+    # Ergebnisse ausgeben
+    print("\n===== ERGEBNISSE =====")
+    print(f"🔹 Berechneter Risiko-Score: {risiko_score:.2f}%")
+    print(f"🔹 Risikoklasse: {risikoklasse}")
+    print(f"🔹 Konformitätsbewertung: {konformitäts_score:.2f} Punkte")
+    print(f"🔹 Konformitätsbewertung in %: {konformitätsbewertung_prozent:.2f}%")
